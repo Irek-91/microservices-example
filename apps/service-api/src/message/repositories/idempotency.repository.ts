@@ -7,6 +7,7 @@ import { REDIS_CLIENT } from '../../redis/redis.constants';
 export class IdempotencyRepository {
   private readonly logger = new Logger(IdempotencyRepository.name);
   private readonly ttl: number;
+  private readonly KEY_PREFIX = 'idempotency';
 
   constructor(
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
@@ -16,9 +17,13 @@ export class IdempotencyRepository {
     this.ttl = ttlConfig ? parseInt(ttlConfig, 10) : 24 * 60 * 60;
   }
 
+  private getRedisKey(key: string): string {
+    return `${this.KEY_PREFIX}:${key}`;
+  }
+
   async findByIdempotencyKey(key: string): Promise<{ result: any } | null> {
     try {
-      const cached = await this.redis.get(`idempotency:${key}`);
+      const cached = await this.redis.get(this.getRedisKey(key));
       if (!cached) return null;
 
       try {
@@ -35,7 +40,7 @@ export class IdempotencyRepository {
 
   async save(key: string, result: any): Promise<void> {
     try {
-      await this.redis.setex(`idempotency:${key}`, this.ttl, JSON.stringify(result));
+      await this.redis.setex(this.getRedisKey(key), this.ttl, JSON.stringify(result));
     } catch (error) {
       this.logger.warn(`Redis error when saving idempotency key ${key}: ${error.message}`);
     }
@@ -43,7 +48,7 @@ export class IdempotencyRepository {
 
   async delete(key: string): Promise<void> {
     try {
-      await this.redis.del(`idempotency:${key}`);
+      await this.redis.del(this.getRedisKey(key));
     } catch (error) {
       this.logger.warn(`Redis error when deleting idempotency key ${key}: ${error.message}`);
     }
