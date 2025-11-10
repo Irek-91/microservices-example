@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package messages;
+
+service MessageService {
+  rpc CreateMessage (CreateMessageRequest) returns (CreateMessageResponse);
+  rpc GetMessages (GetMessagesRequest) returns (GetMessagesResponse);
+}
+
+message CreateMessageRequest {
+  string text = 1;
+  string idempotency_key = 2;
+}
+
+message CreateMessageResponse {
+  string status = 1;
+}
+
+message GetMessagesRequest {
+  // Empty request
+}
+
+message Message {
+  string text = 1;
+  string created_at = 2;
+}
+
+message GetMessagesResponse {
+  repeated Message messages = 1;
+}
+
