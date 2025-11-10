@@ -3,7 +3,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-import { MessageController } from './message.controller';
+import { MessageHttpController } from './message.http.controller';
+import { MessageGrpcController } from './message.grpc.controller';
 import { CreateMessageHandler } from './handlers/create-message.handler';
 import { GetMessagesHandler } from './handlers/get-messages.handler';
 import { IdempotencyRepository } from './repositories/idempotency.repository';
@@ -40,7 +41,7 @@ import { OutboxProcessorService } from './services/outbox-processor.service';
       },
     ]),
   ],
-  controllers: [MessageController],
+  controllers: [MessageHttpController, MessageGrpcController],
   providers: [
     CreateMessageHandler,
     GetMessagesHandler,
